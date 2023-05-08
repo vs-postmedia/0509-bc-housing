@@ -29,6 +29,13 @@ module.exports = {
 		main: path.resolve(ROOT_DIR, 'src/index.js')
 	},
 	mode: 'development',
+	output: {
+		path: path.resolve(ROOT_DIR, 'dist'),
+		filename: '[name].bundle.js',
+		chunkFilename: '[name].chunk.js'
+		// Tweak this to match your GitHub project name
+      	// publicPath: publicPath
+	},
 	module: {
 		rules: [
 			// CSS
@@ -97,6 +104,88 @@ module.exports = {
 					}
 			 	]
 			},
+			// SCSS
+			{
+				test: /\.(sass|scss)$/,
+				exclude: /\.module\.(sass|scss)$/,
+				use: [
+					'style-loader',
+					{
+						loader: 'css-loader', 
+						options: {
+							// Enable url functions handling in css
+							url: true,
+							// Enables @import at-rules handling
+							import: true,
+							// Disable css modules
+							modules: false
+						}
+					},
+					{
+						loader: 'postcss-loader',
+						options: {
+							ident: 'postcss',
+							/**
+								* Note: You can also put your postcss config here
+								* Instead of make a new file just like we do here
+								* Docs: https://github.com/postcss/postcss-loader#config
+							*/
+							config: {
+								// tell postcss-loader where to find config file
+								path: path.resolve(ROOT_DIR, 'config')
+							}
+						}
+					},
+					// resolve-url-loader is needed for sass to correctly resolve relative url path
+						'resolve-url-loader',
+						{
+							loader: 'sass-loader',
+							options: {
+								// sourceMap required by resolve-url-loader
+								sourceMap: true,
+							}
+						}
+				]
+			},
+			{
+			 	test: /\.module\.(sass|scss)$/,
+			 	use: [
+			 		'style-loader',
+			 		{
+			 			loader: 'css-loader',
+			 			options: {
+			 				url: true,
+			 				import: true,
+			 				modules: {
+			 					// Convention name of generated CSS Modules classname
+			 					localIdentName: '[name]__[local]--[contenthash:8]',
+			 				}
+			 			}
+			 		},
+			 		{
+						loader: 'postcss-loader',
+						options: {
+							ident: 'postcss',
+							/**
+								* Note: You can also put your postcss config here
+								* Instead of make a new file just like we do here
+								* Docs: https://github.com/postcss/postcss-loader#config
+							*/
+							config: {
+								// tell postcss-loader where to find config file
+								path: path.resolve(ROOT_DIR, 'config')
+							}
+						}
+					},
+			 		'resolve-url-loader',
+			 		{
+			 			loader: 'sass-loader',
+			 			options: {
+			 				sourceMap: true
+			 			}
+			 		}
+			 	]
+			},
 			// js/jsx (es6 friendly)
 			{
 				test: /\.(js|jsx)$/,
@@ -148,13 +237,6 @@ module.exports = {
 				]
 			}
 		]
-	},
-	output: {
-		path: path.resolve(ROOT_DIR, 'dist'),
-		filename: '[name].bundle.js',
-		chunkFilename: '[name].chunk.js'
-		// Tweak this to match your GitHub project name
-      	// publicPath: publicPath
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
